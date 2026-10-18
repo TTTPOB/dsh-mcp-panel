@@ -84,6 +84,8 @@ const PANEL_CSS = `
 [data-dsh-mcp-panel] :is(.dmcp-cards, .dmcp-tools, .dmcp-probes, .dmcp-capabilities-list) { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 [data-dsh-mcp-panel] :is(.dmcp-card, .dmcp-editor) { border: 1px solid var(--dsw-alias-border-l3); border-radius: 10px; background: var(--dsw-alias-bg-layer-1); overflow: hidden; }
 [data-dsh-mcp-panel] .dmcp-card-header { display: flex; align-items: center; gap: 8px; padding-right: 14px; }
+[data-dsh-mcp-panel] .dmcp-card-header > .dmcp-action { flex-shrink: 0; white-space: nowrap; }
+[data-dsh-mcp-panel] .dmcp-probe-now { align-self: flex-start; }
 [data-dsh-mcp-panel] .dmcp-card-content {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   width: 100%; min-width: 0; padding: 14px 16px; text-align: left; border: 0;
