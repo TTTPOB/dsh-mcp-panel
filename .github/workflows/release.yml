@@ -3,12 +3,19 @@ name: release
 on:
   push:
     tags: ['v*-fork*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing immutable release tag
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 env:
   NODE_OPTIONS: --max-old-space-size=4096
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   release:
@@ -19,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
       - uses: pnpm/action-setup@v6
         with:
@@ -30,7 +38,7 @@ jobs:
       - name: Verify release commit and version
         run: |
           git merge-base --is-ancestor HEAD origin/main
-          node scripts/check-tag-version.mjs "$GITHUB_REF_NAME"
+          node scripts/check-tag-version.mjs "$RELEASE_TAG"
       - run: pnpm install --frozen-lockfile
       - name: Validate and build release
         run: |
@@ -47,5 +55,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          node scripts/changelog-section.mjs "${GITHUB_REF_NAME#v}" > release-notes.md
-          gh release create "$GITHUB_REF_NAME" ./*.tgz --verify-tag --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+          node scripts/changelog-section.mjs "${RELEASE_TAG#v}" > release-notes.md
+          gh release create "$RELEASE_TAG" ./*.tgz --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.md
