@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const version = process.argv[2]
-if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) {
+if (!/^\d+\.\d+\.\d+(?:-fork\d+)?$/.test(version ?? '')) {
   console.error(`usage: node scripts/changelog-section.mjs <x.y.z> (got: ${version ?? 'none'})`)
   process.exit(1)
 }

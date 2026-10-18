@@ -19,7 +19,7 @@ Standalone DeepSeek Harness plugin repository (`dsh-mcp-panel`). Development fol
 
 ## Hard rules applied here
 
-- Read-only panel: never write a config file, never call `Entry.update`, never fake a connection state. Unobservable fields read `unknown`/`-1`/`—` with `statusSource: 'derived'`.
+- Runtime reconnect uses public `Fiber.restart()` on one enabled MCP entry; never persist configuration, call `Entry.update`, or use self-disposal to simulate reconnect. See [ADR 0001](docs/adr/0001-runtime-mcp-recovery.md). Never fake a connection state. Unobservable fields read `unknown`/`-1`/`—` with `statusSource: 'derived'`.
 - Panel content is never model context; `/mcp` output is model-readable and log-reconstructable.
 - Everything displayed is sanitized; configured `headers` never enter any snapshot.
 - No mcp-client changes: transport/OAuth/protocol stay untouched (upstream proposal only).
@@ -35,13 +35,13 @@ Schema in `src/config.ts` (Schemastery, fail-loud bounds, explicit `resolveConfi
 
 ## Checks
 
-`pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pnpm run verify:self-contained && pnpm run verify:artifacts && pnpm pack`. The plain `typecheck` resolves the local harness checkout's fresh type faces through tsconfig `paths`; `typecheck:ci` resolves the npm-published `0.1.7-rc.2` faces (no paths) and is what CI runs — keep both green.
+`pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pnpm run verify:self-contained && pnpm run verify:artifacts && pnpm pack`. Both typecheck commands resolve the declared npm development dependencies without machine-specific checkout paths. Keep source checks, packaged-entry checks, and the selected Host composition checks distinct.
 
 `scripts/verify-headless.mjs` boots the real web profile with this plugin installed (temp `DSH_HOME` + `dsh plugin --profile web add <tarball>`) and prints the exact `/mcp` output; `.github/workflows/compat.yml` runs the same flow monthly against a pinned harness SHA (set `DSH_INSTALL_ANCHOR` when plugin and harness are siblings).
 
 ## Release
 
-`node scripts/release.mjs <x.y.z>` bumps `package.json` (and the hardcoded probe `clientInfo.version` in `src/probe.ts`), stamps the `## [Unreleased]` CHANGELOG section to `[<x.y.z>] - <UTC date>`, re-runs the gate, commits, and tags `v<x.y.z>` locally — never pushes. Push with `git push origin main --follow-tags`; the `release` workflow (release.yml) then gates again, publishes npm with provenance (secret `NPM_TOKEN`), and creates the GitHub Release from the CHANGELOG section (`scripts/changelog-section.mjs`). Tags are `v<x.y.z>`; a missing historical tag gets backfilled at its release commit.
+The long-term branch is `main` on `origin` (`TTTPOB/dsh-mcp-panel`). Develop on a separate branch, merge verified work to `main`, push, and wait for CI before tagging `v<version>-forkN`. Keep `package.json` and the probe clientInfo version identical. `.github/workflows/release.yml` builds and publishes immutable GitHub tarballs from commits on `main`; it never publishes npm or replaces an existing tag/asset. Local tarballs are for isolated tests only.
 
 ## Docs
 

@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.24-fork1] - 2026-10-18
+
+### Added
+
+- Restart one enabled MCP plugin without changing its configuration, including a fresh retry budget after automatic retries stop.
+
+### Fixed
+
+- Probe active, resolved MCP configuration so dynamic authorization headers and stdio environments are retained.
+- Align server details and root spacing, unify panel controls, and retain the last status snapshot after a refresh error.
+
+### Delivery
+
+- Publish this personal fork as immutable GitHub Release tarballs; npm releases remain owned by the original project.
+
 ## [0.6.24] - 2026-10-10
 
 ### Fixed

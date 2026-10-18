@@ -16,8 +16,8 @@
  *      tag (message: `dsh-mcp-panel v<version>`).
  *
  * The script never pushes. `git push origin main --follow-tags` ships it; the
- * `release` workflow (release.yml) then re-runs the gate, publishes to npm
- * with provenance, and creates the GitHub Release from the CHANGELOG section.
+ * `release` workflow (release.yml) validates the main-branch commit and publishes
+ * immutable GitHub Release tarballs. This fork does not publish to npm.
  *
  * On gate failure the two written files are reverted, so the tree stays clean.
  *
@@ -32,7 +32,7 @@ const root = resolve(import.meta.dirname, '..')
 
 const version = process.argv[2]
 const skipGate = process.argv.includes('--skip-gate')
-if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) {
+if (!/^\d+\.\d+\.\d+(?:-fork\d+)?$/.test(version ?? '')) {
   console.error(`usage: node scripts/release.mjs <x.y.z> [--skip-gate] (got: ${version ?? 'none'})`)
   process.exit(1)
 }
@@ -74,7 +74,7 @@ writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)
 // in the same bump so the tripwire runs green inside the gate below.
 const probePath = resolve(root, 'src', 'probe.ts')
 let probe = readFileSync(probePath, 'utf8')
-const probeVersionLine = /(version: ')\d+\.\d+\.\d+(')/u
+const probeVersionLine = /(version: ')\d+\.\d+\.\d+(?:-fork\d+)?(')/u
 const probeMatches = probe.match(probeVersionLine)
 if (probeMatches === null || probeMatches[0] === undefined) {
   console.error('src/probe.ts has no hardcoded PROBE_CLIENT_INFO version line; cannot bump it')

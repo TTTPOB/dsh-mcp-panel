@@ -14,7 +14,7 @@ import { resolve } from 'node:path'
 
 const ref = process.argv[2] ?? ''
 const expected = ref.startsWith('v') ? ref.slice(1) : null
-if (expected === null || !/^\d+\.\d+\.\d+$/.test(expected)) {
+if (expected === null || !/^\d+\.\d+\.\d+(?:-fork\d+)?$/.test(expected)) {
   console.error(`usage: node scripts/check-tag-version.mjs v<x.y.z> (got: ${ref || 'none'})`)
   process.exit(1)
 }

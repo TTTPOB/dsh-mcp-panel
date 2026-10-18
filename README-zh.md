@@ -1,154 +1,23 @@
-<div align="center">
-
 # dsh-mcp-panel
-- **1024 商店渠道**：先 `npm i -g dsh1024`，再 `dsh1024 plugin --profile web add dsh-mcp-panel`（计入 [deepseek1024.com](https://deepseek1024.com) 安装排行）。
 
-**官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在设置页可视化增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。**
-
-*官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。*
-
-> **官方仓库。** 本仓库是 dsh-mcp-panel 的唯一官方仓库，由 PerryLink 维护。其他账号下的同名仓库与本项目无关。
-
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Gitee](https://img.shields.io/badge/Gitee-mirror-c71d23?logo=gitee)](https://gitee.com/perrylink/dsh-mcp-panel)
-[![DSH plugin](https://img.shields.io/badge/dsh--plugin-✅-green)](https://github.com/topics/dsh-plugin)
-[![dsh-doctor](https://raw.githubusercontent.com/PerryLink/dsh-plugin-doctor/main/badges/PerryLink__dsh-mcp-panel.svg)](https://github.com/PerryLink/dsh-plugin-doctor#verified-徽章)
-[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-top-rated.svg)](https://dsh.market/)
-[![Node](https://img.shields.io/badge/node-%5E22.19%20%7C%7C%20%3E%3D24-brightgreen.svg)](#)
-[![CI](https://img.shields.io/github/actions/workflow/status/PerryLink/dsh-mcp-panel/ci.yml?branch=main&label=CI)](https://github.com/PerryLink/dsh-mcp-panel/actions)
-[![Version](https://img.shields.io/github/v/tag/PerryLink/dsh-mcp-panel?label=version)](https://github.com/PerryLink/dsh-mcp-panel/releases)
-[![npm version](https://img.shields.io/npm/v/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![npm downloads](https://img.shields.io/npm/dm/dsh-mcp-panel)](https://www.npmjs.com/package/dsh-mcp-panel)
-[![dshfind](https://dshfind.com/api/badge/PerryLink/dsh-mcp-panel?metric=downloads&lang=zh)](https://dshfind.com/zh/plugins/PerryLink/dsh-mcp-panel?ref=badge)
+这是基于 0.6.24 的 [PerryLink/dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel) 个人 fork，由 TTTPOB 维护。在设置 → 插件 → MCP 中管理官方 DeepSeek Harness MCP 客户端。
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-</div>
+## 使用
 
----
+重连通过 Cordis Fiber.restart() 仅重启选中的已启用 MCP 插件，关闭旧连接并重置重试预算，不修改配置。操作确认表示插件已重启，不代表服务器已经连接成功。已禁用的条目需要另外启用。
 
-**📖 生态实测知识库**（实测数据，不是营销）：[插件开发指南 · 选型实测数据 · 维护取舍判据](https://perrylink.github.io/dsh-plugin-guide/)。
-
-<!-- star-cta -->
-## ⭐ 如果它帮到了你
-
-这个插件是 [DSH 插件家族](https://github.com/PerryLink)的一员（40+ 个，全部 Apache-2.0）。如果你在用，**给个 star** —— 它不会解锁任何功能，但会让下一个人在搜索里更容易找到它。
-
-*English:* part of a 40+ plugin family for DeepSeek Harness. If it is useful, **a star helps the next person find it** — nothing is gated behind it.
-
-## What is dsh-mcp-panel?
-
-官方 DeepSeek Harness MCP client 的 MCP 管理控制台 —— 在设置页可视化增删改 MCP 服务器、试用工具调用，配以诚实的连接状态、健康诊断与安全可逆的 profile 写入。
-
-官方 client = 桥接，本插件 = 控制台：经 `mcp/status` seam 读取状态，只写入只追加、走审批的 profile patch。
-
-![dsh-mcp-panel 终端演示：dsh-mcp-panel — install, then /mcp status per server](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.png)
-
-![Animated terminal demo of dsh-mcp-panel](https://raw.githubusercontent.com/PerryLink/dsh-mcp-panel/main/docs/assets/dsh-mcp-panel-demo.gif)
-
-*同一次运行，动图版。*
-
-## Compatibility
-
-| 维度 | 状态 |
-|---|---|
-| Harness | DeepSeek Harness `dsh-v0.2.1-alpha.1`（2026-09-24 核验）：双 typecheck 尺子在 `0.1.6-alpha.2` dev/test 面上双绿（本仓是全族金丝雀，抬线未暴露新错误）、174 项测试、全量门禁链（typecheck / typecheck:ci / test / build / verify / package）。`writePatch` 的写入复验断言在该线上成立。上一基线：`dsh-v0.1.7-alpha.1`（2026-09-16 已核验）。 |
-| Node | `^22.19.0 \|\| >=24.0.0` |
-| 平台 | Web GUI（双面：Host + 浏览器） |
-| 模型 | 任意（面板只读；仅 `/mcp` 输出对模型可见） |
-
-## What you get
-
-`dsh-mcp-panel` 是官方 MCP client 之上的体验层：只读运行时视图加上安全可逆的 profile 写入。
-
-- **`/mcp` 命令** —— 每 server 一行：transport、目标、工具数、连接状态（来自上游 seam；未观测时如实显示 `unknown`）、最近错误、重连计数——模型可读、会话日志可重建、五种输出语言。
-- **`/mcp <server> tools`** —— 模型可见的 `mcp__*` 工具名与描述。
-- **`/mcp <server> health`** —— 派生自愈建议（ENOENT → 依赖缺失、ECONNREFUSED、超时、401/403/404、DNS、限流、重连耗尽…）；退出码 / stderr 尾部如实标注*待官方支持*。
-- **`/mcp <server> call <tool> [json]`** —— 经**官方工具管线**（`ctx.tools.execute()`）试用调用；pre-execute 权限策略、审批、guard、post-execute 全部生效。
-- **设置 → 插件 → MCP 页** —— 状态卡片（徽章、诊断、探测），加 server CRUD 与工具试用台。
-- **Server CRUD** —— 增删改表单 → 添加用 `insert`，编辑/删除用 id 定向覆盖（`- id:` + `name:` + `disabled:`/`config:`）→ 剪贴板复制或审批写入，自动备份，并在报成功前对照 loader 复验。
-- **Resources 浏览** —— 经官方 `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource` 工具只读列出资源、模板与 URI 读取（由上游 `@deepseek-ai/dsh-mcp-resources` 服务桥接）；结果只显示在本页、绝不进入模型上下文。
-- **工具试用台** —— 选 server → 选 `mcp__*` 工具 → JSON 填参 → 规范 JSON 结果 + render 内容；按 `trialMaxResultChars` 截断；仅面板可见、永不进入模型上下文。
-
-## Architecture: official client = bridge, this plugin = console
-
-[`@deepseek-ai/dsh-mcp-client`](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/mcp/mcp-client) 是**唯一的桥接层**：每个 MCP server 一个插件实例，以手写 `cordis.yml` 行的形式配置，负责连接传输、同步工具并注册 `mcp__<server>__<tool>` 工具名。本插件从不取代它——而是构建其上的**体验层**：
-
-```text
-                    ┌────────────────────────────────────────────┐
- profile            │  cordis.yml / cordis.patch.yml             │
- 组合（每个         │   - id: mcp-github                          │
-  server 一行，     │     name: '@deepseek-ai/dsh-mcp-client'     │
-  手写）            │     config: { serverName, transport, … }    │
-                    │   - id: mcp-panel                           │
-                    │     name: dsh-mcp-panel   ◄── 本插件        │
-                    └───────────────┬────────────────────────────┘
-                                    │
-        ┌───────────────────────────┴───────────────────────────┐
-        │                                                        │
-   ┌────▼──────────────┐        ┌───────────────────────────┐    │
-   │ @deepseek-ai/dsh- │        │ dsh-mcp-panel（控制台）    │    │
-   │ mcp-client        │        │                           │    │
-   │ • 传输连接        │        │ • /mcp 命令               │    │
-   │ • 工具同步        │        │ • 设置 → 插件 → MCP 页：  │    │
-   │ • mcp__* 工具     │◄──────►│   CRUD、工具试用台        │    │
-   │ • mcp/status seam │ 状态   │ • 健康诊断                │    │
-   └───────────────────┘        │ • 探测、能力一览          │    │
-                                └───────────────────────────┘    │
-```
-
-控制台通过官方 client 已落地的 `mcp/status` 可观测 seam（事件 + `mcpStatus` 查询服务）、工具注册表与 loader **读取**事实；**写入**只发生在 profile 的 patch 层——只追加、走审批、自动备份。传输、OAuth 与协议完全不动。
-
-## Console vs. hand-written cordis.yml
-
-| | 手写 cordis.yml | dsh-mcp-panel 控制台 |
-|---|---|---|
-| 添加服务器 | 改 YAML，注意缩进与引号 | 表单 → patch 片段 → **一键复制**或**写入**（审批 + 自动备份） |
-| 修改服务器 | 改 YAML，重启/热重载 | 表单预填当前行；未改动的密钥在 host 侧保留原值 |
-| 删除服务器 | 删掉该行 | 追加 `- id:` + `disabled: true` 覆盖操作（patch 词汇表没有 remove）——可随时重新启用 |
-| 查看状态 | 翻日志 | 徽章 + 重连次数 + 最近错误，来自 `mcp/status` seam 实时数据 |
-| 试用工具 | 让模型调用 | 试用台 → 官方 `ctx.tools.execute()` 管线（权限与审批全程生效） |
-| 排查故障 | grep 日志 | `/mcp <server> health` 派生自愈建议 |
-| 误操作 | 手动回滚 | 每次写入只追加、留时间戳备份 |
-
-控制台的输出就是 `cordis.patch.yml` 的词汇表——你手写的那几行，由它生成、预览并安全落地。
-
-## Quick start
-
-```sh
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
-```
-
-```sh
-# 1. 把 bundle 安装进 profile
-dsh plugin --profile web add github:PerryLink/dsh-mcp-panel
-
-# 或从 npm（发布版本）
-dsh plugin --profile web add dsh-mcp-panel
-
-# 2. 重启并校验该行
-dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
-```
-
-随后打开 **设置 → 插件 → MCP**，或运行：
+刷新只重新读取状态快照。探测使用活动插件已求值的配置（包含动态认证 header 和环境变量）另外执行 HTTP 或 stdio 握手；两者都不是重连。刷新失败保留上次成功快照；无法观测的连接字段仍显示未知。
 
 ```text
 /mcp
-/mcp everything tools
-/mcp everything health
-/mcp everything call echo '{"message": "hi"}'
+/mcp <server> tools
+/mcp <server> health
+/mcp <server> call <tool> [json]
 ```
 
-## Install & uninstall
-
-- **git 通道**（最新 `main`）：`dsh plugin --profile web add github:PerryLink/dsh-mcp-panel` —— `prepare` 脚本只用生产依赖构建。
-- **npm 通道**（发布版本）：`dsh plugin --profile web add dsh-mcp-panel`。
-- **tarball 通道**：在本仓库 `pnpm pack`，再 `dsh plugin --profile web add ./dsh-mcp-panel-<version>.tgz`。
-- **卸载**：从 `cordis.patch.yml` 移除 `mcp-panel` 行（web 面板热重载），从 profile 的 `node_modules` 删除本包，并用 `dsh web --dump-config` 确认没有残留的 `mcp-panel` 行。
-
 ## Configuration
-
-所有可调项都是 Schemastery `Config` 字段（可从 cordis.yml 覆盖）。`cordis.patch.yml` 逐键内联注释。
 
 | 键 | 默认值 | 含义 |
 |---|---|---|
@@ -168,117 +37,25 @@ dsh --profile web --dump-config | grep -A3 'id: mcp-panel'
 | `backupCount` | `5` | 每次写入保留的 `cordis.patch.yml` 备份数 |
 | `catalogEntries` | `[]` | 推荐服务器目录的用户覆盖：追加条目，同 `id` 的条目替换内置条目 |
 
-## Tools & surfaces
-
-| 表面 | 类型 | 说明 |
-|---|---|---|
-| `/mcp` | command | 每 server 状态行；模型可读、日志可重建 |
-| `/mcp <server> tools` | command | 模型可见的 `mcp__*` 工具名与描述 |
-| `/mcp <server> health` | command | 由脱敏错误文本派生的自愈建议 |
-| `/mcp <server> call <tool> [json]` | command | 经官方工具管线试用调用 |
-| `mcp_probe` | tool | 可选 Streamable HTTP 连通性探测（后台任务） |
-| 设置 → 插件 → MCP 页 | UI 槽位 | 状态卡片、server CRUD 与工具试用台 |
-| `mcpPanel` Typert Remote | service | 只读快照通道（Host → client） |
-
-## Resources & Prompts
-
-Resources 已由上游桥接：base bundle 默认挂载 `@deepseek-ai/dsh-mcp-resources`，官方 client 把每个连接的资源 provider 注册进 `ctx.mcpResources`，该包拥有三个共享工具（`list_mcp_resources`、`list_mcp_resource_templates`、`read_mcp_resource`）。控制台特征探测该服务与已注册工具，并在每个 server 卡上提供只读 Resources 浏览（列表 / 模板 / URI 读取）——每次调用都走**官方工具管线**，结果只显示在本页、绝不进入模型上下文。
-
-MCP **prompt 模板**与**资源订阅**仍待上游；能力一览中 Prompts 标注**待官方支持**。
-
-## Permissions & data
-
-- **权限**：`dshWorkshop` manifest 声明 `network:outbound` 与 `native-code:none`。
-- **数据**：面板只读；只写入只追加的 `cordis.patch.yml` 片段（走审批、先备份）。URL 查询凭据、userinfo 密码、header 值、Bearer token、JWT 在渲染前一律打码；配置的 `headers` 从不进入任何快照，env/header 的**值**绝不出 Host（编辑器只见 key）。
-
-## Security boundaries
-
-- **桥接层仍是桥接层。** 不改传输、OAuth、协议；每个 server 一行 mcp-client，与你手写完全一致。
-- **不伪造状态。** 无上游观测时连接字段显示 `unknown` / `—` 并标注 `statusSource: 'derived'`；退出码与 stderr 尾部绝不臆造。
-- **写入只追加、走审批、先备份。** 控制台从不改写 `cordis.patch.yml`：只追加生成的操作，保留最新 `backupCount` 份备份，并在报成功前对照 loader 重放后的状态复验（被跳过的补丁绝不显示为成功）。
-- **零提示词注入。** 本插件不注册任何提示词段落；对模型可见的文本只有两个工具/命令描述。
-
-## Known limitations
-
-- **prompt 模板与资源订阅** 待官方支持——官方 client 桥接工具与资源，但未桥接 prompts 与订阅。
-- **退出码 / stderr 尾部** 在 client 暴露前如实标注*待官方支持*。
-- **只读面板** —— 控制台从不伪造连接状态；不可观测字段显示 `unknown` / `-1` / `—`。
-- **写入复验而非保证** —— 控制台对照 loader 重放后的状态复验每次写入；loader 未应用时（例如该行由 `$DSH_HOME/cordis.patch.yml` 插入、profile 层补丁够不着）如实报失败。
-
-## Development
+## 开发
 
 ```sh
-pnpm run typecheck && pnpm run typecheck:ci && pnpm test && pnpm run build && pnpm run verify:self-contained && pnpm run verify:artifacts && pnpm pack
+pnpm install --frozen-lockfile
+pnpm run typecheck:ci
+pnpm test
+pnpm run lint
+pnpm run check:readmes
+pnpm run build
+pnpm run verify:self-contained
+pnpm run verify:artifacts
+pnpm pack
 ```
 
-`scripts/verify-headless.mjs` 启动真实 web profile 并打印 `/mcp` 实际输出。发布：`node scripts/release.mjs <x.y.z>` 跑全量门禁、提交并本地打 `v<x.y.z>` 标签（绝不推送）。
+## 发布
 
-## Topics
+[ADR](docs/adr/) · [GitHub Releases](https://github.com/TTTPOB/dsh-mcp-panel/releases) · [Apache-2.0](LICENSE)
 
-`dsh`, `dsh-plugin`, `deepseek-harness`, `deepseek`, `cordis`, `mcp`, `mcp-client`, `observability`, `panel`
-
-## Contributors
-
-- [@PerryLink](https://github.com/PerryLink) —— 创建者与维护者。
-- [@xiaoyuyu6420](https://github.com/xiaoyuyu6420) —— 诊断出干净 checkout 构建失败背后缺失的 client devDependencies（PR #5）。
-- [@feiler0](https://github.com/feiler0) —— 贡献了 stdio MCP 服务器探测（通过 stdin/stdout 完成一次 MCP initialize 握手）（PR #7，以 PR #15 合并）。
-
-## PerryLink DSH Plugin Family
-
-本项目是 [PerryLink](https://github.com/PerryLink) 维护的 DeepSeek Harness 插件家族成员：**33 个活跃维护**，名册共 **42** 个，其中 **6 个已冻结**、**3 个已退役**——每一个都在下表保留自己的行，原因见「状态」列。如果它能帮到你，其他的也会：
-
-| Plugin | 一句话 | 状态 |
-|---|---|---|
-| **[dsh-auto-review](https://github.com/PerryLink/dsh-auto-review)** | Second-model auto-review on the approval chain, fail-closed by default | |
-| **[dsh-autotier](https://github.com/PerryLink/dsh-autotier)** | Automatic strong/cheap model-tier routing with deterministic risk guards and a `/tier` command | |
-| **[dsh-background-agents](https://github.com/PerryLink/dsh-background-agents)** | Durable background child agents with a Web UI sidebar, messaging and interrupt | 🚫 **已退役** — 见上方说明 |
-| **[dsh-budget](https://github.com/PerryLink/dsh-budget)** | Cost governance for DeepSeek Harness: budgets, carbon, and latency in one panel. | 🧊 已冻结 — 见仓库 README |
-| **[dsh-catalog](https://github.com/PerryLink/dsh-catalog)** | DSH Desktop Market standard catalog source for the PerryLink family | |
-| **[dsh-cert-mcp](https://github.com/PerryLink/dsh-cert-mcp)** | Read-only MCP server exposing the certification registry: grades, snapshots and five-dimension evidence | |
-| **[dsh-checkpoint-rewind](https://github.com/PerryLink/dsh-checkpoint-rewind)** | Claude Code /rewind-equivalent: snapshots, session forks, one-shot restore | |
-| **[dsh-claude-move](https://github.com/PerryLink/dsh-claude-move)** | Migrate Claude Code sessions, memory, skills and CLAUDE.md into DSH | 🧊 已冻结 — 见仓库 README |
-| **[dsh-click](https://github.com/PerryLink/dsh-click)** | Cross-platform native desktop control for DeepSeek Harness — Windows first. | |
-| **[dsh-composer-history](https://github.com/PerryLink/dsh-composer-history)** | Terminal-style input history for the web composer: arrows, Ctrl+R search | |
-| **[dsh-data-quality](https://github.com/PerryLink/dsh-data-quality)** | Dataset quality checks and citation cross-checks (the optional numeric bridge consumed here) | |
-| **[dsh-defend](https://github.com/PerryLink/dsh-defend)** | Prompt-injection, jailbreak, and secret-leak defense for DeepSeek Harness. | 🧊 已冻结 — 见仓库 README |
-| **[dsh-doublecheck](https://github.com/PerryLink/dsh-doublecheck)** | Engineering-discipline guard: requirements grill, test gates, adversary review | |
-| **[dsh-draw](https://github.com/PerryLink/dsh-draw)** | Unified static-image generation routing for DeepSeek Harness. | 🧊 已冻结 — 见仓库 README |
-| **[dsh-fast](https://github.com/PerryLink/dsh-fast)** | Read-only performance diagnostics for DeepSeek Harness. | |
-| **[dsh-fund-research](https://github.com/PerryLink/dsh-fund-research)** | Deterministic research reports for Chinese public mutual funds | |
-| **[dsh-github](https://github.com/PerryLink/dsh-github)** | GitHub PR/issues integration for DSH, every write gated by approval | |
-| **[dsh-industry-research](https://github.com/PerryLink/dsh-industry-research)** | Industry research orchestration that seals its deliverables through this plugin's `ctx.researchReport.assemble` | |
-| **[dsh-laya](https://github.com/PerryLink/dsh-laya)** | Laya typed decisions (`noul`/`choice`/`score`) as a first-class Cordis service and model-visible tools | |
-| **[dsh-library](https://github.com/PerryLink/dsh-library)** | Local document knowledge base for DeepSeek Harness. | |
-| **[dsh-local-ai](https://github.com/PerryLink/dsh-local-ai)** | Local-model (Ollama) integration for DeepSeek Harness. | |
-| **[dsh-lsp-actions](https://github.com/PerryLink/dsh-lsp-actions)** | LSP diagnostics, formatting, completion, code actions and rename over language servers | |
-| **[dsh-mask](https://github.com/PerryLink/dsh-mask)** | PII masking middleware: anonymize at the model boundary, restore at the display layer | |
-| **[dsh-mcp-panel](https://github.com/PerryLink/dsh-mcp-panel)** | Read-only MCP runtime panel: /mcp command + Settings tab with status, tools and errors | |
-| **[dsh-memento](https://github.com/PerryLink/dsh-memento)** | Approval-gated cross-session memory: ctx.memory seam + SQLite + memory tool | 🧊 已冻结 — 见仓库 README |
-| **[dsh-observe](https://github.com/PerryLink/dsh-observe)** | OpenTelemetry and Langfuse observability exporter for DeepSeek Harness. | |
-| **[dsh-output-styles](https://github.com/PerryLink/dsh-output-styles)** | Claude Code outputStyles-equivalent runtime style switching | |
-| **[dsh-permission-rules](https://github.com/PerryLink/dsh-permission-rules)** | Claude Code-style declarative allow/deny/ask permission rules with audit | |
-| **[dsh-plugin-certification](https://github.com/PerryLink/dsh-plugin-certification)** | Community certification registry with repro-checkable grades and badges | |
-| **[dsh-plugin-doctor](https://github.com/PerryLink/dsh-plugin-doctor)** | Zero-dependency static + sandbox smoke detector for DSH plugins | |
-| **[dsh-plugin-guide](https://github.com/PerryLink/dsh-plugin-guide)** | Plugin-development knowledge base as an on-demand agent skill | |
-| **[dsh-plugin-kit](https://github.com/PerryLink/dsh-plugin-kit)** | Shared zero-runtime-dependency toolkit for the PerryLink DSH plugins | |
-| **[dsh-plugin-upgrade](https://github.com/PerryLink/dsh-plugin-upgrade)** | One-package, one-corridor-index plugin upgrade skill: routes a repository to the matching closed corridor card | |
-| **[dsh-plugin-upgrade-015](https://github.com/PerryLink/dsh-plugin-upgrade-015)** | Merged `0.1.3-alpha.1` → `0.1.5-rc.1` upgrade corridor card plus a zero-dependency seam scanner | 🚫 已退役 —— 走廊由 `dsh-plugin-upgrade` 承担 |
-| **[dsh-reach](https://github.com/PerryLink/dsh-reach)** | Multi-channel approval/question bridge: WeChat/Telegram/Feishu, session console | 🧊 已冻结 — 见仓库 README |
-| **[dsh-research-report](https://github.com/PerryLink/dsh-research-report)** | Verifiable research-report engine: content-addressed evidence ledger and sealed versions | |
-| **[dsh-score](https://github.com/PerryLink/dsh-score)** | Multi-dimensional quality scoring for DeepSeek Harness plugins. | |
-| **[dsh-session-pin](https://github.com/PerryLink/dsh-session-pin)** | Pin sessions in the Web sidebar with durable ordering | 🚫 **已退役** — 见上方说明 |
-| **[dsh-session-sync](https://github.com/PerryLink/dsh-session-sync)** | Cross-device session sync for DeepSeek Harness — a dedicated git mirror of your session store. | |
-| **[dsh-skill-pack-security](https://github.com/PerryLink/dsh-skill-pack-security)** | Security-audit skill pack: secret scan, dependency and supply-chain review | |
-| **[dsh-talk](https://github.com/PerryLink/dsh-talk)** | Voice-first session loop for DeepSeek Harness: talk to it, hear it answer. | |
-| **[dsh-team-rooms](https://github.com/PerryLink/dsh-team-rooms)** | Cross-session team rooms: shared message bus, task board and timeline | 🚫 **已退役** — 见上方说明 |
-| **[dsh-test-drive](https://github.com/PerryLink/dsh-test-drive)** | Isolated install-and-smoke test drives for DeepSeek Harness plugins. | |
-| **[dsh-ticktick](https://github.com/PerryLink/dsh-ticktick)** | TickTick/Dida365 task bridge: session-header panel + 11 tools | |
-| **[dsh-translate](https://github.com/PerryLink/dsh-translate)** | Vendor parameter translation and deterministic JSON repair for DeepSeek Harness. | |
-
-## License
-
-[Apache License 2.0](LICENSE) © 2026 dsh-mcp-panel contributors
-
-### 从 DSH Desktop 市场安装
-
-所有 PerryLink 插件均可在 DSH Desktop 内置市场中浏览：**市场 → 来源 → 添加来源 → 粘贴** `https://perrylink-dsh-catalog.perrylink.workers.dev/catalog-source.json` **→ 选中**。安装仍需通过市场的 npm 身份校验与你的确认。
+```sh
+gh release download v0.6.24-fork1 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
+dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork1.tgz
+```
