@@ -430,3 +430,40 @@ describe('console actions', () => {
     expect(result.approvalPath).toBe('interactive-confirmation')
   })
 })
+
+describe('McpPanelService.reconnect', () => {
+  it('rejects missing, disabled, ambiguous, and unsupported entries', async () => {
+    const h = await mountHarness([
+      mcpRow('disabled', HTTP_CONFIG, 2, true),
+      mcpRow('unsupported', HTTP_CONFIG),
+      mcpRow('duplicate', HTTP_CONFIG),
+      nestedMcpRow('group', 'duplicate', HTTP_CONFIG),
+    ])
+    await expect(h.service.reconnect('missing')).rejects.toThrow('missing or ambiguous')
+    await expect(h.service.reconnect('duplicate')).rejects.toThrow('missing or ambiguous')
+    await expect(h.service.reconnect('disabled')).rejects.toThrow('disabled')
+    await expect(h.service.reconnect('unsupported')).rejects.toThrow('no supported restart lifecycle')
+  })
+
+  it('propagates lifecycle failure instead of acknowledging a reload', async () => {
+    const row = mcpRow('failed', HTTP_CONFIG)
+    row.fiber!.restart = async () => { throw new Error('fixture startup failed Authorization: Bearer fake-reload-secret') }
+    const h = await mountHarness([row])
+    const failure = h.service.reconnect('failed')
+    await expect(failure).rejects.toThrow('fixture startup failed')
+    await expect(failure).rejects.not.toThrow('fake-reload-secret')
+  })
+
+  it('rejects a reload that remains pending instead of claiming activation', async () => {
+    const row = mcpRow('pending', HTTP_CONFIG, 0)
+    row.fiber!.restart = async () => undefined
+    const h = await mountHarness([row])
+    await expect(h.service.reconnect('pending')).rejects.toThrow('did not activate')
+  })
+
+  it('never falls back to raw configuration when no evaluated config exists', async () => {
+    const row = mcpRow('unmounted', HTTP_CONFIG, -1)
+    const h = await mountHarness([row])
+    expect(h.service.probeSpec('web')).toBeUndefined()
+  })
+})

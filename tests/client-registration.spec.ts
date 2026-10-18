@@ -15,7 +15,7 @@ import { MCP_PANEL_REMOTE } from '../src/client/remote.ts'
 import { TYPERT } from '../src/typert.host.ts'
 
 /** Fake client root recording every registration the plugin makes. */
-function makeCtx(remoteStatus: () => Promise<unknown>, remoteProbe: (name: string) => Promise<unknown> = async () => ({ ok: true, value: { jobId: 'mcp-probe-1', note: 'x' } })) {
+function makeCtx(remoteStatus: () => Promise<unknown>, remoteProbe: (name: string) => Promise<unknown> = async () => ({ ok: true, value: { jobId: 'mcp-probe-1', note: 'x' } }), remoteReconnect: (entryId: string) => Promise<unknown> = async entryId => ({ ok: true, value: { entryId, accepted: true, reloaded: true } })) {
   const registered: Array<{ options: Record<string, unknown>; component: unknown }> = []
   const mounted: unknown[] = []
   const slots = {
@@ -35,7 +35,7 @@ function makeCtx(remoteStatus: () => Promise<unknown>, remoteProbe: (name: strin
         mounted.push(contribution)
         return () => undefined
       }),
-      mcpPanel: { status: remoteStatus, probe: remoteProbe },
+      mcpPanel: { status: remoteStatus, probe: remoteProbe, reconnect: remoteReconnect },
     },
     slots,
     inject: vi.fn((_deps: string[], callback: (scope: unknown) => void) => { callback(ctx) }),
@@ -103,6 +103,18 @@ describe('client apply', () => {
     expect(probe).toHaveBeenCalledWith('web')
     probe.mockResolvedValueOnce({ ok: false, error: { code: 'business', message: 'nope' } })
     await expect(injected.probe('web')).rejects.toThrow('mcpPanel.probe failed: business: nope')
+  })
+
+  it('forwards entry ids to reconnect and unwraps success and failure envelopes', async () => {
+    const result = { entryId: 'entry-two', accepted: true, reloaded: true }
+    const reconnect = vi.fn<(entryId: string) => Promise<unknown>>().mockResolvedValueOnce({ ok: true, value: result })
+      .mockResolvedValueOnce({ ok: false, error: { code: 'business', message: 'disabled entry' } })
+    const { ctx, registered } = makeCtx(async () => ({ ok: true, value: null }), undefined, reconnect)
+    await apply(ctx)
+    const injected = (registered[0]!.options['inject'] as () => { reconnect: (entryId: string) => Promise<unknown> })()
+    await expect(injected.reconnect('entry-two')).resolves.toEqual(result)
+    expect(reconnect).toHaveBeenCalledWith('entry-two')
+    await expect(injected.reconnect('disabled')).rejects.toThrow('mcpPanel.reconnect failed: business: disabled entry')
   })
 
   it('installs the scoped stylesheet once', async () => {

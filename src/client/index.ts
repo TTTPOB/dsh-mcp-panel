@@ -34,6 +34,7 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReconnectResult,
 } from '../wire.ts'
 
 export type { McpPanelTabInjected, McpPanelTabProps } from './McpPanelTab.tsx'
@@ -110,6 +111,8 @@ export async function apply(ctx: ClientContext): Promise<void> {
       unwrap<PatchPreview>(await scope.remote.mcpPanel.previewPatch(opJson), 'previewPatch')
     const writePatch: McpPanelTabInjected['writePatch'] = async (opJson, confirmed) =>
       unwrap<PatchWriteResult>(await scope.remote.mcpPanel.writePatch(opJson, confirmed, currentSessionId(scope.get('sessions'))), 'writePatch')
+    const reconnect: McpPanelTabInjected['reconnect'] = async (entryId) =>
+      unwrap<ReconnectResult>(await scope.remote.mcpPanel.reconnect(entryId), 'reconnect')
     const callTool: McpPanelTabInjected['callTool'] = async (requestJson) =>
       unwrap<McpTrialResultWire>(await scope.remote.mcpPanel.callTool(requestJson, currentSessionId(scope.get('sessions'))), 'callTool')
     slots.inject('settings.plugins.tab', () => slots.register({
@@ -118,7 +121,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
       order: 30,
       label: () => t('tab'),
       locale: NS,
-      inject: (): McpPanelTabInjected => ({ status, probe, previewPatch, writePatch, callTool }),
+      inject: (): McpPanelTabInjected => ({ status, probe, reconnect, previewPatch, writePatch, callTool }),
     }, McpPanelTab))
   })
 }

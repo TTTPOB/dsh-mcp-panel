@@ -7,7 +7,7 @@
  * @module dsh-mcp-panel/test/harness
  */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context, type Plugin } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { SessionId, type Session } from '@deepseek-ai/dsh-session'
@@ -20,7 +20,7 @@ export interface FakeEntry {
   /** Loader-composed id (may carry an enclosing group prefix such as `include:`). */
   readonly id: string
   disabled: boolean
-  readonly fiber: { readonly state: number } | undefined
+  readonly fiber: { readonly state: number; readonly config: unknown; restart?: () => Promise<void> } | undefined
   readonly options: {
     readonly id: string
     readonly name: string
@@ -33,7 +33,7 @@ export function mcpRow(entryId: string, config: unknown, state = 2, disabled = f
   return {
     id: entryId,
     disabled,
-    fiber: state === -1 ? undefined : { state },
+    fiber: state === -1 ? undefined : { state, config },
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }
@@ -43,7 +43,7 @@ export function nestedMcpRow(groupId: string, entryId: string, config: unknown, 
   return {
     id: `${groupId}:${entryId}`,
     disabled,
-    fiber: state === -1 ? undefined : { state },
+    fiber: state === -1 ? undefined : { state, config },
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }
@@ -96,7 +96,7 @@ export interface Harness {
  * @param config - raw plugin config.
  * @returns the mounted harness.
  */
-export async function mountHarness(entries: FakeEntry[] = [], config: Record<string, unknown> = {}, jobs?: unknown): Promise<Harness> {
+export async function mountHarness(entries: FakeEntry[] = [], config: Record<string, unknown> = {}, jobs?: unknown, loader?: Plugin): Promise<Harness> {
   const ctx = new Context()
   await ctx.plugin(SessionStore)
   const session = ctx.sessions.create(SessionId('harness-session'))
@@ -104,7 +104,8 @@ export async function mountHarness(entries: FakeEntry[] = [], config: Record<str
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(CommandRuntime)
   if (jobs !== undefined) ctx.provide('jobs', jobs as never)
-  ctx.provide('loader', {
+  if (loader) await ctx.plugin(loader)
+  else ctx.provide('loader', {
     entries: function* (): IterableIterator<FakeEntry> {
       for (const entry of entries) yield entry
     },

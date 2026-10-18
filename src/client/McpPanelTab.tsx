@@ -1,6 +1,6 @@
 /** The MCP management console tab: server cards, CRUD editor, trial console, capabilities, probes. */
 
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { filterServers, presentMcpPanel, probeBadge, summarizePanel, type BadgeTone, type PresentedServerRow } from './present.ts'
 import { ServerEditor } from './ServerEditor.tsx'
@@ -13,12 +13,15 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReconnectResult,
 } from '../wire.ts'
 
 /** Registration-side injected face: the console RPCs (RemoteResult already unwrapped). */
 export interface McpPanelTabInjected {
   /** Read the current Host snapshot. */
   status: () => Promise<McpPanelSnapshot>
+  /** Restart an enabled entry without changing its configuration. */
+  reconnect: (entryId: string) => Promise<ReconnectResult>
   /** Start a one-shot probe of one streamable-http server (panel-only result). */
   probe: (serverName: string) => Promise<ProbeStarted>
   /** Render one CRUD operation as its patch fragment (no write). */
@@ -38,7 +41,7 @@ export type McpPanelTabProps =
 type ViewState =
   | { readonly status: 'loading' }
   | { readonly status: 'error'; readonly message: string }
-  | { readonly status: 'ready'; readonly snapshot: McpPanelSnapshot }
+  | { readonly status: 'ready'; readonly snapshot: McpPanelSnapshot; readonly message?: string }
 
 /** One resources-browse outcome per server card. */
 type ResourceBrowseState =
@@ -112,12 +115,15 @@ function diagnosticText(code: string, text: string, t: McpPanelTabProps['t']): s
 }
 
 /** Render the MCP management console tab. */
-export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool, t }: McpPanelTabProps): ReactNode {
+export function McpPanelTab({ status, probe, reconnect, previewPatch, writePatch, callTool, t }: McpPanelTabProps): ReactNode {
   const listId = useId()
   const [request, setRequest] = useState(0)
+  const [refreshing, setRefreshing] = useState(true)
+  const requestActive = useRef(false)
   // Expanded card set: multiple cards may be open at once, so "expand all"
   // and "collapse all" can act on the whole (filtered) list.
   const [expanded, setExpanded] = useState<Record<string, true>>({})
+  const [reconnectState, setReconnectState] = useState<Record<string, { kind: 'pending' | 'done' | 'error'; message?: string }>>({})
   const [probeError, setProbeError] = useState<string | null>(null)
   const [state, setState] = useState<ViewState>({ status: 'loading' })
   // Per-card tool filter: one query per server so expanding two cards at once
@@ -151,11 +157,18 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
 
   useEffect(() => {
     let current = true
+    requestActive.current = true
+    setRefreshing(true)
     void Promise.resolve().then(() => status()).then(
-      (snapshot) => { if (current) setState({ status: 'ready', snapshot }) },
+      (snapshot) => {
+        if (current) { setState({ status: 'ready', snapshot }); setRefreshing(false); requestActive.current = false }
+      },
       (error: unknown) => {
         if (current) {
-          setState({ status: 'error', message: error instanceof Error ? error.message : String(error) })
+          const message = error instanceof Error ? error.message : String(error)
+          setState(previous => previous.status === 'ready' ? { ...previous, message } : { status: 'error', message })
+          setRefreshing(false)
+          requestActive.current = false
         }
       },
     )
@@ -169,9 +182,9 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
   const intervalMs = state.status === 'ready' ? state.snapshot.refreshIntervalMs : 0
   useEffect(() => {
     if (intervalMs <= 0) return undefined
-    const tick = (): void => { if (!document.hidden) reload() }
+    const tick = (): void => { if (!document.hidden && !requestActive.current) reload() }
     const timer = setInterval(tick, intervalMs)
-    const onVisible = (): void => { if (!document.hidden) reload() }
+    const onVisible = (): void => { if (!document.hidden && !requestActive.current) reload() }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       clearInterval(timer)
@@ -191,31 +204,35 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
   // the disabled probe button) settles even when refreshIntervalMs is 0.
   useEffect(() => {
     if (!probeRunning) return undefined
-    const timer = setInterval(() => { if (!document.hidden) reload() }, 1500)
+    const timer = setInterval(() => { if (!document.hidden && !requestActive.current) reload() }, 1500)
     return () => { clearInterval(timer) }
   }, [probeRunning])
 
   const retry = (): void => {
-    setState({ status: 'loading' })
     reload()
   }
 
   return (
-    <div className="dmcp-section" data-dsh-mcp-panel="" aria-busy={state.status === 'loading'}>
+    <div className="dmcp-section" data-dsh-mcp-panel="" aria-busy={refreshing}>
       {state.status === 'loading' ? <p className="dmcp-status">{t('loading')}</p> : null}
-      {state.status === 'error' ? (
+      <div className="dmcp-topbar">
+        <div><h3 className="dmcp-heading">{t('servers')}</h3><p className="dmcp-summary">{summaryText}</p></div>
+        <div className="dmcp-editor-actions">
+          <button type="button" className="dmcp-action" disabled={refreshing} onClick={reload}>{refreshing ? t('refreshing') : t('refreshStatus')}</button>
+          <button type="button" className="dmcp-action dmcp-primary" disabled={model === undefined} onClick={() => { setEditor({ entryId: '', view: null }) }}>{t('addServer')}</button>
+        </div>
+      </div>
+      {state.status === 'error' || (state.status === 'ready' && state.message !== undefined) ? (
         <div className="dmcp-failure">
-          <p role="alert">{t('error')}</p>
+          <p role="alert">{state.status === 'ready' ? t('refreshFailed') : t('error')}</p>
           <p className="dmcp-failure-detail">{state.message}</p>
-          <button type="button" onClick={retry}>{t('retry')}</button>
+          <button type="button" className="dmcp-action" disabled={refreshing} onClick={retry}>{t('retry')}</button>
         </div>
       ) : null}
       {model !== undefined ? (
         <div className="dmcp-panel">
           {model.empty ? <p className="dmcp-status">{t('empty')}</p> : (
             <>
-              <h3 className="dmcp-heading">{t('servers')}</h3>
-              <p className="dmcp-summary">{summaryText}</p>
               <div className="dmcp-toolbar">
                 <input
                   type="search"
@@ -229,7 +246,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                   type="button"
                   className="dmcp-action"
                   onClick={() => {
-                    setExpanded(Object.fromEntries(visibleServers.map(row => [row.view.serverName, true] as const)))
+                    setExpanded(Object.fromEntries(visibleServers.map(row => [row.view.entryId || row.view.serverName, true] as const)))
                   }}
                 >
                   {t('expandAll')}
@@ -239,14 +256,16 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
               {visibleServers.length === 0 ? <p className="dmcp-status">{t('noMatch')}</p> : null}
               <ul className="dmcp-cards">
                 {visibleServers.map((row) => {
-                  const open = expanded[row.view.serverName] === true
-                  const detailId = `${listId}-${encodeURIComponent(row.view.serverName)}`
+                  const rowKey = row.view.entryId || row.view.serverName
+                  const open = expanded[rowKey] === true
+                  const detailId = `${listId}-${encodeURIComponent(rowKey)}`
                   const toolQuery = toolQueries[row.view.serverName] ?? ''
                   const rowProbeRunning = model.probes.some(
                     probeRow => probeRow.view.status === 'running' && probeRow.view.serverName === row.view.serverName,
                   )
                   return (
-                    <li className="dmcp-card" key={row.view.serverName} data-mcp-server={row.view.serverName} data-open={open ? 'true' : undefined}>
+                    <li className="dmcp-card" key={rowKey} data-mcp-entry={row.view.entryId} data-mcp-server={row.view.serverName} data-open={open ? 'true' : undefined}>
+                      <div className="dmcp-card-header">
                       <button
                         type="button"
                         className="dmcp-card-content"
@@ -255,13 +274,14 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                         onClick={() => {
                           setExpanded((current) => {
                             const next = { ...current }
-                            if (next[row.view.serverName] === true) delete next[row.view.serverName]
-                            else next[row.view.serverName] = true
+                            if (next[rowKey] === true) delete next[rowKey]
+                            else next[rowKey] = true
                             return next
                           })
                         }}
                       >
-                        <strong className="dmcp-card-title">{row.view.serverName}</strong>
+                        <span className="dmcp-chevron" aria-hidden="true">{open ? '−' : '+'}</span>
+                        <span className="dmcp-card-identity"><strong className="dmcp-card-title">{row.view.serverName}</strong><code className="dmcp-card-target">{row.view.transport} · {row.view.target}</code></span>
                         <span className="dmcp-card-trailing">
                           {row.view.probeState !== null ? (
                             <Badge
@@ -275,6 +295,23 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                           </span>
                         </span>
                       </button>
+                      <button type="button" className="dmcp-action dmcp-primary"
+                        disabled={!row.view.enabled || row.view.entryId === '' || reconnectState[rowKey]?.kind === 'pending'}
+                        aria-busy={reconnectState[rowKey]?.kind === 'pending'}
+                        title={t('reconnectHint')}
+                        onClick={() => {
+                          setReconnectState(current => ({ ...current, [rowKey]: { kind: 'pending' } }))
+                          void Promise.resolve().then(() => reconnect(row.view.entryId)).then(
+                            () => { setReconnectState(current => ({ ...current, [rowKey]: { kind: 'done' } })); reload() },
+                            (error: unknown) => { setReconnectState(current => ({ ...current, [rowKey]: { kind: 'error', message: error instanceof Error ? error.message : String(error) } })) },
+                          )
+                        }}>
+                        {reconnectState[rowKey]?.kind === 'pending' ? t('reconnectPending') : t('reconnectNow')}
+                      </button>
+                      </div>
+                      {reconnectState[rowKey] !== undefined ? <p className={reconnectState[rowKey]?.kind === 'error' ? 'dmcp-error-text dmcp-card-feedback' : 'dmcp-status dmcp-card-feedback'} role={reconnectState[rowKey]?.kind === 'error' ? 'alert' : 'status'}>
+                        {reconnectState[rowKey]?.kind === 'pending' ? t('reconnectPending') : reconnectState[rowKey]?.kind === 'error' ? t('reconnectFailed') + ': ' + reconnectState[rowKey]?.message : t('reconnectStarted')}
+                      </p> : null}
                       {open ? (
                         <div className="dmcp-card-details" id={detailId}>
                           <dl className="dmcp-details">
@@ -316,13 +353,13 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
                               <button
                                 type="button"
                                 className="dmcp-action dmcp-danger"
-                                onClick={() => { setRemoveArm(row.view.serverName); setRemoveError(null) }}
+                                onClick={() => { setRemoveArm(rowKey); setRemoveError(null) }}
                               >
                                 {t('removeServer')}
                               </button>
                             </div>
                           ) : null}
-                          {removeArm === row.view.serverName && row.view.entryId !== '' ? (
+                          {removeArm === rowKey && row.view.entryId !== '' ? (
                             <div className="dmcp-remove">
                               <p className="dmcp-status">{t('removeConfirm')}</p>
                               {removeError !== null ? <p className="dmcp-error-text" role="alert">{removeError}</p> : null}
@@ -439,11 +476,6 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
             <p className="dmcp-patch-hint">{t('patchHint')} <code>{model.patchFile}</code></p>
           ) : null}
 
-          <div className="dmcp-toolbar">
-            <button type="button" className="dmcp-action" onClick={() => { setEditor({ entryId: '', view: null }) }}>
-              {t('addServer')}
-            </button>
-          </div>
           {editor !== null ? (
             <ServerEditor
               t={t}
@@ -459,7 +491,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
           <TrialConsole
             t={t}
             servers={model.servers.map(row => row.view)}
-            policy={state.status === 'ready' ? state.snapshot.trial : { enabled: false, timeoutMs: 0, maxResultChars: 0 }}
+            policy={model.trial}
             callTool={callTool}
           />
 
@@ -478,6 +510,7 @@ export function McpPanelTab({ status, probe, previewPatch, writePatch, callTool,
           </div>
 
           <h3 className="dmcp-heading">{t('probes')}</h3>
+          <p className="dmcp-status">{t('reconnectHint')}</p>
           {model.probes.length === 0 ? <p className="dmcp-status">{t('probeEmpty')}</p> : (
             <ul className="dmcp-probes">
               {model.probes.map((probeRow) => {

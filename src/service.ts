@@ -65,6 +65,7 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReconnectResult,
 } from './wire.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -338,14 +339,32 @@ private readonly trialCaller = createTrialCaller()
   }
 
   /**
-   * Start a one-shot connectivity probe of one configured MCP server
-   * (streamable-http or stdio) as an UNOWNED background job — panel-only,
-   * like the `mcp_probe` tool, but callable from the settings tab. Exported
-   * on the wire by the `mcpPanel/probe` invocation descriptor.
-   *
-   * @param serverName - configured namespace.
-   * @returns the started job id and where the result lands.
+   * Reload one enabled MCP plugin through Cordis' public lifecycle. The old
+   * instance's effects finish disposal before the replacement activates.
+   * Connection failures may be tolerated by the client's startup policy;
+   * a successful reload therefore does not assert transport connectivity.
+   * @param entryId - unique patch entry id from the panel snapshot.
+   * @returns reload acknowledgement, never a connected status.
    */
+  async reconnect(entryId: string): Promise<ReconnectResult> {
+    const entries = [...this.ctx.loader.entries()].filter(entry =>
+      entry.options.name === MCP_CLIENT_MODULE && entry.options.id === entryId)
+    if (entries.length !== 1) throw new Error('dsh-mcp-panel: MCP entry is missing or ambiguous')
+    const entry = entries[0]!
+    if (entry.disabled) throw new Error('dsh-mcp-panel: disabled MCP entries cannot be reconnected')
+    if (typeof entry.fiber?.restart !== 'function') {
+      throw new Error('dsh-mcp-panel: this MCP entry has no supported restart lifecycle')
+    }
+    try {
+      await entry.fiber.restart()
+    } catch (error) {
+      throw new Error(`dsh-mcp-panel: MCP reload failed: ${sanitizeText(String(error))}`)
+    }
+    if (entry.fiber.state !== 2) throw new Error('dsh-mcp-panel: MCP plugin did not activate after restart')
+    return { entryId, accepted: true, reloaded: true }
+  }
+
+  /** Start a panel-only probe using the target plugin's effective config. */
   probe(serverName: string): ProbeStarted {
     const target = this.probeSpec(serverName)
     if (target === undefined) {
@@ -633,12 +652,14 @@ private readonly trialCaller = createTrialCaller()
    *
    * @param serverName - configured namespace.
    * @returns the transport-tagged probe spec, or `undefined` when the server
-   *   is not a configured MCP row of either transport.
+   *   has no evaluated plugin config or supported transport.
    */
   probeSpec(serverName: string): ProbeTarget | undefined {
     for (const entry of this.ctx.loader.entries()) {
       if (entry.options.name !== MCP_CLIENT_MODULE) continue
-      const config = entry.options.config
+      // Loader interpolates expressions against the target plugin context,
+      // after injection, and stores the validated result on its fiber.
+      const config = entry.fiber?.config
       // `entry.options.id` — not `entry.id` — keeps the namespace fallback
       // identical to the snapshot's (`entry:<options.id>`); `entry.id` carries
       // enclosing group prefixes (e.g. `include:`), which would silently break
@@ -653,9 +674,10 @@ private readonly trialCaller = createTrialCaller()
         const headers: Record<string, string> = {}
         if (typeof headersValue === 'object' && headersValue !== null && !Array.isArray(headersValue)) {
           for (const [name, value] of Object.entries(headersValue as Record<string, unknown>)) {
-            if (typeof value === 'string') headers[name] = value
+            if (typeof value !== 'string') return undefined
+            headers[name] = value
           }
-        }
+        } else if (headersValue !== undefined) return undefined
         return { kind: 'http', url, headers }
       }
       if (row['transport'] === 'stdio') {
@@ -678,8 +700,8 @@ private readonly trialCaller = createTrialCaller()
           }
         } else if (envValue !== undefined) return undefined
         const cwd = row['cwd']
-        if (cwd !== undefined && (typeof cwd !== 'string' || cwd === '')) return undefined
-        return { kind: 'stdio', command, args, env, ...(typeof cwd === 'string' ? { cwd } : {}) }
+        if (cwd !== undefined && typeof cwd !== 'string') return undefined
+        return { kind: 'stdio', command, args, env, ...(typeof cwd === 'string' && cwd !== '' ? { cwd } : {}) }
       }
       return undefined
     }

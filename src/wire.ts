@@ -358,6 +358,37 @@ export const MCP_PANEL_PROBE_DESCRIPTOR = Object.freeze({
   sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
 } as const) satisfies InvocationDescriptor
 
+/** A completed lifecycle reload; it does not assert transport connectivity. */
+export interface ReconnectResult {
+  entryId: string
+  accepted: boolean
+  reloaded: boolean
+}
+
+/** Strict wire result for a manual lifecycle reload. */
+export const RECONNECT_RESULT_SCHEMA = z.object({
+  entryId: z.string(),
+  accepted: z.boolean(),
+  reloaded: z.boolean(),
+})
+
+/** Restart a single MCP plugin without updating or persisting its entry. */
+export const MCP_PANEL_RECONNECT_DESCRIPTOR = Object.freeze({
+  id: 'dsh-mcp-panel#mcpPanel/reconnect',
+  service: 'mcpPanel',
+  namespace: 'mcpPanel',
+  method: 'reconnect',
+  invocation: Object.freeze({ kind: 'direct' }),
+  parameters: Object.freeze([Object.freeze({
+    name: 'entryId',
+    wire: 'entryId',
+    source: 'json',
+    codec: strictCodec('dsh-mcp-panel/types#ReconnectEntryId', z.string()),
+  } satisfies InvocationDescriptor['parameters'][number])]),
+  result: strictCodec('dsh-mcp-panel/types#ReconnectResult', RECONNECT_RESULT_SCHEMA),
+  sourceLocation: Object.freeze({ file: 'src/wire.ts', line: 1, column: 1 }),
+} as const) satisfies InvocationDescriptor
+
 /** Result of `mcpPanel/previewPatch`: the generated fragment before any write. */
 export interface PatchPreview {
   /** The generated YAML block (append-only operation). */
@@ -507,6 +538,7 @@ export const MCP_PANEL_CALLTOOL_DESCRIPTOR = Object.freeze({
 export const MCP_PANEL_INVOCATIONS = Object.freeze([
   MCP_PANEL_STATUS_DESCRIPTOR,
   MCP_PANEL_PROBE_DESCRIPTOR,
+  MCP_PANEL_RECONNECT_DESCRIPTOR,
   MCP_PANEL_PREVIEW_DESCRIPTOR,
   MCP_PANEL_WRITE_DESCRIPTOR,
   MCP_PANEL_CALLTOOL_DESCRIPTOR,

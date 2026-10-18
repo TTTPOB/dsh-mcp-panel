@@ -16,12 +16,15 @@ import type {
   PatchPreview,
   PatchWriteResult,
   ProbeStarted,
+  ReconnectResult,
 } from '../wire.ts'
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
   interface TypertRemoteNamespace$mcpPanel {
     /** Read the current console snapshot. */
     status: () => Promise<RemoteResult<McpPanelSnapshot>>
+    /** Restart one enabled Loader entry; does not confirm a connection. */
+    reconnect: (entryId: string) => Promise<RemoteResult<ReconnectResult>>
     /** Start a one-shot connectivity probe of one streamable-http server. */
     probe: (serverName: string) => Promise<RemoteResult<ProbeStarted>>
     /** Render one CRUD operation as its patch fragment (no write). */
@@ -33,6 +36,7 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
   }
   interface TypertRemoteMap {
     'mcpPanel/status': () => Promise<RemoteResult<McpPanelSnapshot>>
+    'mcpPanel/reconnect': (entryId: string) => Promise<RemoteResult<ReconnectResult>>
     'mcpPanel/probe': (serverName: string) => Promise<RemoteResult<ProbeStarted>>
     'mcpPanel/previewPatch': (opJson: string) => Promise<RemoteResult<PatchPreview>>
     'mcpPanel/writePatch': (opJson: string, confirmed: boolean, sessionId?: string) => Promise<RemoteResult<PatchWriteResult>>
