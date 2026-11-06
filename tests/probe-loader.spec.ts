@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import Loader from '@deepseek-ai/cordis-plugin-loader'
-import Include from '@deepseek-ai/cordis-plugin-include'
+import Include, { type PatchOptions } from '@deepseek-ai/cordis-plugin-include'
+import { load } from 'js-yaml'
 import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mountHarness } from './harness.ts'
@@ -35,8 +36,8 @@ class FixtureLoader extends Loader {
   }
 }
 
-async function fixture(configYaml: string) {
-  const h = await mountHarness([], {}, undefined, FixtureLoader)
+async function fixture(configYaml: string, panelConfig: Record<string, unknown> = {}) {
+  const h = await mountHarness([], panelConfig, undefined, FixtureLoader)
   const ctx = h.ctx
   const dir = await mkdtemp(join(tmpdir(), 'mcp-panel-loader-'))
   cleanups.push(() => rm(dir, { recursive: true, force: true }))
@@ -163,6 +164,30 @@ ${headers}`)
     await h.service.reconnect('target')
     expect(h.ctx.tools.schemas().filter(tool => tool.name === 'mcp__fixture__echo')).toHaveLength(1)
     expect(server.methods.filter(method => method === 'initialize')).toHaveLength(2)
+  })
+
+  it('writes a backed-up fragment that disables the real Loader row and removes its tools', async () => {
+    const server = await endpoint()
+    const h = await fixture(`    serverName: fixture
+    transport: streamable-http
+    url: ${server.url}
+    headers: { Authorization: "Bearer fixture-only-token" }
+`, { writeVerifyEnabled: false })
+    const dir = join(h.file, '..')
+    h.ctx.baseUrl = pathToFileURL(dir + '/').href
+    const patch = join(dir, 'cordis.patch.yml')
+    const original = '# fixture profile patch\n[]\n'
+    await writeFile(patch, original)
+    expect(h.ctx.tools.get('mcp__fixture__echo')).toBeDefined()
+    const result = await h.service.writePatch(JSON.stringify({ kind: 'disable', entryId: 'target', serverName: 'fixture' }), true, undefined)
+    expect(await readFile(result.backupPath, 'utf8')).toBe(original)
+    await h.service.writePatch(JSON.stringify({ kind: 'disable', entryId: 'target', serverName: 'fixture' }), true, undefined)
+    const content = await readFile(patch, 'utf8')
+    expect(content).toContain(original.split('\n')[0])
+    const patches = load(content) as PatchOptions[]
+    await h.entry.parent.tree.ctx.fiber.update({ path: pathToFileURL(h.file).href, patches })
+    expect(h.entry.disabled).toBe(true)
+    expect(h.ctx.tools.get('mcp__fixture__echo')).toBeUndefined()
   })
 
   it('recovers an exhausted automatic reconnect budget with a fresh client instance', async () => {

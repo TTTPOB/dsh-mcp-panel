@@ -10,6 +10,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { afterEach, describe, expect, it } from 'vitest'
 import { appendPatchFragment } from '../src/write.ts'
+import { load } from 'js-yaml'
 
 const FRAGMENT = "- insert:\n    - id: mcp-x\n      name: '@deepseek-ai/dsh-mcp-client'\n      config:\n        serverName: x\n        transport: stdio\n        command: npx\n"
 
@@ -55,6 +56,19 @@ describe('appendPatchFragment', () => {
     expect(content).toContain('mcp-x')
     // YAML list shape stays valid: two top-level `- insert:` blocks.
     expect(content.match(/- insert:/g)).toHaveLength(2)
+  })
+
+  it.each([undefined, '# keep this comment\n[]\n'])('emits parseable operations for a new or empty patch layer (%s)', async initial => {
+    const dir = await tempDir()
+    const file = join(dir, 'cordis.patch.yml')
+    if (initial !== undefined) await writeFile(file, initial)
+    const result = await appendPatchFragment(file, FRAGMENT, 5)
+    expect(load(await readFile(file, 'utf8'))).toEqual(load(FRAGMENT))
+    if (initial !== undefined) expect(await readFile(result.backupPath, 'utf8')).toBe(initial)
+    await appendPatchFragment(file, FRAGMENT, 5)
+    const content = await readFile(file, 'utf8')
+    expect(load(content)).toEqual([...(load(FRAGMENT) as unknown[]), ...(load(FRAGMENT) as unknown[])])
+    if (initial !== undefined) expect(content).toContain(initial.split('\n')[0])
   })
 
   it('prunes backups beyond the retention count (newest kept)', async () => {

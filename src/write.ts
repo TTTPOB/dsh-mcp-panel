@@ -4,7 +4,9 @@
  * operation block at a time, after copying the current file to a timestamped
  * backup. The Loader applies patch lists in order, so an appended operation
  * is the effective configuration; user comments and unrelated rows stay
- * byte-for-byte untouched. Backups are pruned to the newest `backupCount`.
+ * byte-for-byte untouched, except for removing a standalone empty `[]`
+ * placeholder before the first operation. Backups retain the original file
+ * and are pruned to the newest `backupCount`.
  *
  * Every write is reversible: the backup restores the previous state, and an
  * appended block can be hand-removed to undo.
@@ -19,8 +21,7 @@ const BACKUP_SUFFIX = '.bak-'
 
 /** Fresh-file header when the patch layer does not exist yet. */
 const FRESH_FILE_HEADER = `# dsh-mcp-panel managed patch layer (created by the MCP console).
-# Operations are APPEND-ONLY: the console never rewrites existing content.
-[]
+# Operations are APPEND-ONLY: the console never rewrites existing operations.
 `
 
 /**
@@ -65,7 +66,12 @@ export async function appendPatchFragment(
 
 /** Append one fragment with surrounding newlines, normalizing a trailing newline first. */
 async function appendFragment(filePath: string, fragment: string): Promise<number> {
-  const content = await readFile(filePath, 'utf8')
+  let content = await readFile(filePath, 'utf8')
+  // A standalone empty sequence cannot precede block-sequence operations.
+  const values = content.split(/\r?\n/u).map(line => line.replace(/#.*/u, '').trim()).filter(Boolean)
+  if (values.length === 1 && /^\[\s*\]$/u.test(values[0]!)) {
+    content = content.replace(/^[ \t]*\[[ \t]*\]/mu, '')
+  }
   const normalized = content.endsWith('\n') ? content : `${content}\n`
   const block = normalized.endsWith('\n\n') ? `${fragment}\n` : `\n${fragment}\n`
   await writeFile(filePath, `${normalized}${block}`, 'utf8')
