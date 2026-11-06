@@ -5,3 +5,9 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@deepseek-ai/*'
 verifyDepsBeforeRun: false
+
+overrides:
+  "@deepseek-ai/dsh-tool-executor-ptc": "https://github.com/TTTPOB/deepseek-harness/releases/download/daily-driver-v0.2.2-rc.1-fork2/deepseek-ai-dsh-tool-executor-ptc-0.2.2-rc.1-fork1.tgz"
+  "@deepseek-ai/dsh-agent": "https://github.com/TTTPOB/deepseek-harness/releases/download/daily-driver-v0.2.2-rc.1-fork2/deepseek-ai-dsh-agent-0.2.2-rc.1-fork1.tgz"
+  "@deepseek-ai/dsh-session": "https://github.com/TTTPOB/deepseek-harness/releases/download/daily-driver-v0.2.2-rc.1-fork1/deepseek-ai-dsh-session-0.2.2-rc.1-fork1.tgz"
+  "@deepseek-ai/dsh-tools": "https://github.com/TTTPOB/deepseek-harness/releases/download/daily-driver-v0.2.2-rc.1-fork2/deepseek-ai-dsh-tools-0.2.2-rc.1-fork1.tgz"

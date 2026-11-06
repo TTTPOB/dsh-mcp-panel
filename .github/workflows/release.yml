@@ -15,6 +15,7 @@ permissions:
 
 env:
   NODE_OPTIONS: --max-old-space-size=4096
+  DSH_FORK_PTC_NATIVE: '1'
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:

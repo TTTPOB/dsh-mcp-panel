@@ -6,6 +6,10 @@ on:
     branches: [main]
   pull_request:
 
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+  DSH_FORK_PTC_NATIVE: '1'
+
 jobs:
   test:
     strategy:
