@@ -15,6 +15,7 @@ import Loader from '@deepseek-ai/cordis-plugin-loader'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { SessionId } from '@deepseek-ai/dsh-session'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import * as nativeExecutor from '@deepseek-ai/dsh-tool-executor-native'
 import { resolveConfig } from '../src/config.ts'
 import { makeAgent, mcpRow } from './harness.ts'
 
@@ -44,6 +45,7 @@ async function mount(config: Record<string, unknown> = {}, jobs?: unknown, entri
   const session = ctx.sessions.create(SessionId('dsh-mcp-panel-lifecycle'))
   ctx.provide('systemPrompt', { tools: () => () => undefined, section: () => () => undefined } as never)
   await ctx.plugin(ToolRuntime)
+  await ctx.plugin(nativeExecutor)
   await ctx.plugin(CommandRuntime)
   if (jobs !== undefined) ctx.provide('jobs', jobs as never)
   ctx.provide('loader', {

@@ -3,7 +3,8 @@
  * through the OFFICIAL pipeline — `ctx.tools.execute()` — so permission
  * policy (`tools/pre-execute`), approval asks, guards, around-dispatch, and
  * post-execute all apply exactly as they do for model calls. The console is
- * a caller, not a bypass.
+ * a caller, not a bypass. The selected executor receives a one-call batch with
+ * no model-step log. Standalone trials admit only unconditional tools.
  *
  * Approval routing: the client may pass the current session id; the service
  * resolves the live agent through `ctx.agents` and forwards it as the
@@ -19,7 +20,9 @@
  * @module dsh-mcp-panel/trial
  */
 
-import type { ToolExecutionResult, ToolExecutionInput, ToolRuntime } from '@deepseek-ai/dsh-tools'
+import type { Agent } from '@deepseek-ai/dsh-agent'
+import { ToolCallId } from '@deepseek-ai/dsh-llm'
+import type { ToolExecutionResult, ToolRuntime } from '@deepseek-ai/dsh-tools'
 
 /** Wire result of one trial call (lossless-JSON scalar payload). */
 export interface McpTrialResult {
@@ -37,7 +40,7 @@ export interface McpTrialResult {
 
 /** Live agent registry face the trial reads opportunistically. */
 export interface McpAgentRegistryFace {
-  get(id: string): unknown | undefined
+  get(id: string): Agent | undefined
 }
 
 /** One trial request (decoded from the client's JSON). */
@@ -145,16 +148,16 @@ export function createTrialCaller() {
         throw new Error(`tool "${toolName}" is not registered — the server may be down or its sync failed`)
       }
       const agent = sessionId === undefined || sessionId === '' ? undefined : agents?.get(sessionId)
-      const callId = `${TRIAL_CALL_PREFIX}-${++trialCounter}` as unknown as ToolExecutionInput['callId']
+      const callId = ToolCallId(`${TRIAL_CALL_PREFIX}-${++trialCounter}`)
       const started = Date.now()
-      const execution: ToolExecutionInput = {
-        callId,
-        name: toolName,
-        arguments: argumentsValue,
-        ...agent === undefined ? {} : { agent: agent as NonNullable<ToolExecutionInput['agent']> },
+      const batch = await tools.execute({
+        calls: [{ type: 'tool-call', id: callId, name: toolName, arguments: JSON.stringify(argumentsValue) }],
+        ...agent === undefined ? {} : { agent },
         signal: AbortSignal.timeout(limits.timeoutMs),
-      }
-      const result = await tools.execute(execution)
+      })
+      const outcome = batch.results.find(outcome => outcome.callId === callId)
+      if (outcome === undefined) throw new Error('tool executor returned no result for the trial call')
+      const result = outcome.result
       const durationMs = Date.now() - started
       const { json, truncated } = projectTrialResult(result, limits.maxResultChars)
       return { callId: String(callId), isError: result.isError, truncated, durationMs, resultJson: json }

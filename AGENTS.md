@@ -15,7 +15,7 @@ Standalone DeepSeek Harness plugin repository (`dsh-mcp-panel`). Development fol
 - `src/trial.ts` — the official-pipeline trial caller: `mcp__*` tools plus the three shared resource tools `list_mcp_resources` / `list_mcp_resource_templates` / `read_mcp_resource`, with the requested `server` injected into their arguments (conflicts fail closed).
 - `src/probe.ts` — optional `mcp_probe` background-job tool (unowned job: panel-only results). Both transports probe: streamable-http via one `initialize` POST; stdio via spawning the row's `command`/`args` under `scrubbedParentEnv` (the same base the mcp-client bridge uses, imported from `@deepseek-ai/dsh-subprocess`) + explicit `env`/`cwd`, one `initialize` handshake over stdin/stdout, sanitized serverInfo or failure detail.
 - `src/client/` — browser half: `$mount` the Remote contribution, register the `settings.plugins.tab` entry id `mcp`, pure presenter in `present.ts`, inline scoped stylesheet in `styles.ts` (standalone bundles cannot use the in-repo CSS-module pipeline).
-- `tests/` — vitest; REAL `Context` + `Session`/`ToolRuntime`/`CommandRuntime` from the `0.1.7-rc.2` peers, fake Loader face, fake Agent, optional fake jobs.
+- `tests/` — vitest; real `Context` + `Session`/`ToolRuntime`/`CommandRuntime` and native executor from the pinned peers, fake Agent/jobs, plus real Loader/Include and loopback MCP lifecycle tests.
 
 ## Hard rules applied here
 
@@ -50,4 +50,4 @@ The long-term branch is `main` on `origin` (`TTTPOB/dsh-mcp-panel`). Develop on 
 
 ## Peer versions
 
-Peer deps range `>=0.1.2-rc.1 <0.2.0 || >=0.1.5-alpha.1 <0.2.0 || >=0.1.6-0 <0.2.0 || >=0.1.7-0 <0.2.0`; the package runs against harness installations ≥ 0.1.2-rc.1 (the profile's hoisted module fallback resolves peers to the installation's own copies). `@types/node` deliberately tracks the `engines` floor (Node 22 line, `^22.19.0`): major bumps such as dependabot's 26.2.0 proposal describe APIs the supported runtime does not have and are declined (dependabot.yml ignores semver-major for it; rationale also on PR #3). Client type faces come from the four `@deepseek-ai/dsh-client-*` devDependencies (`connection`/`locale`/`ui-settings`/`ui-slots`, `0.1.7-rc.2`) — imports in `src/client` resolve against them, so a clean checkout typechecks with `typecheck:ci` alone.
+DSH peers and development dependencies are pinned to `0.2.2-rc.1`; Cordis is `4.1.0`, Loader/Include/Group `1.1.0`, and Node is ≥24.9. Node types track the runtime floor (24.x). Trial calls use the scope-selected executor; the plugin does not install or replace it. `Fiber.config` is raw input; probes read `Fiber.effectiveConfig` for evaluated headers and environment values. Client type faces come from the declared `@deepseek-ai/dsh-client-*` development dependencies, with no checkout-specific paths.

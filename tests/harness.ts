@@ -12,6 +12,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { SessionId, type Session } from '@deepseek-ai/dsh-session'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import * as nativeExecutor from '@deepseek-ai/dsh-tool-executor-native'
 import type { McpLoaderRow } from '../src/aggregate.ts'
 import type { McpPanelService } from '../src/service.ts'
 
@@ -20,7 +21,7 @@ export interface FakeEntry {
   /** Loader-composed id (may carry an enclosing group prefix such as `include:`). */
   readonly id: string
   disabled: boolean
-  readonly fiber: { readonly state: number; readonly config: unknown; restart?: () => Promise<void> } | undefined
+  readonly fiber: { readonly state: number; readonly effectiveConfig: unknown; restart?: () => Promise<void> } | undefined
   readonly options: {
     readonly id: string
     readonly name: string
@@ -33,7 +34,7 @@ export function mcpRow(entryId: string, config: unknown, state = 2, disabled = f
   return {
     id: entryId,
     disabled,
-    fiber: state === -1 ? undefined : { state, config },
+    fiber: state === -1 ? undefined : { state, effectiveConfig: config },
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }
@@ -43,7 +44,7 @@ export function nestedMcpRow(groupId: string, entryId: string, config: unknown, 
   return {
     id: `${groupId}:${entryId}`,
     disabled,
-    fiber: state === -1 ? undefined : { state, config },
+    fiber: state === -1 ? undefined : { state, effectiveConfig: config },
     options: { id: entryId, name: '@deepseek-ai/dsh-mcp-client', config },
   }
 }
@@ -102,6 +103,7 @@ export async function mountHarness(entries: FakeEntry[] = [], config: Record<str
   const session = ctx.sessions.create(SessionId('harness-session'))
   ctx.provide('systemPrompt', { tools: () => () => undefined, section: () => () => undefined } as never)
   await ctx.plugin(ToolRuntime)
+  await ctx.plugin(nativeExecutor)
   await ctx.plugin(CommandRuntime)
   if (jobs !== undefined) ctx.provide('jobs', jobs as never)
   if (loader) await ctx.plugin(loader)

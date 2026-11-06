@@ -659,7 +659,7 @@ private readonly trialCaller = createTrialCaller()
       if (entry.options.name !== MCP_CLIENT_MODULE) continue
       // Loader interpolates expressions against the target plugin context,
       // after injection, and stores the validated result on its fiber.
-      const config = entry.fiber?.config
+      const config = entry.fiber?.effectiveConfig
       // `entry.options.id` — not `entry.id` — keeps the namespace fallback
       // identical to the snapshot's (`entry:<options.id>`); `entry.id` carries
       // enclosing group prefixes (e.g. `include:`), which would silently break

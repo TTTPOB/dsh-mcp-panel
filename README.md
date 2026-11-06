@@ -4,6 +4,8 @@ This is the TTTPOB personal fork of [PerryLink/dsh-mcp-panel](https://github.com
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+Requires DSH 0.2.2-rc.1 and Node ≥24.9. Trials use the selected upstream executor and its permission pipeline without model-step logging; use a native executor in the caller’s scope. A PTC scope reports the upstream direct-call denial; the personal DSH fork also permits tools explicitly listed in `ptcNativeTools`. Standalone trials admit only unconditional tools. Writes preserve existing operations and comments; an empty `[]` placeholder is removed before the first append, with the original kept in the backup.
+
 ## Usage
 
 Reconnect restarts only the selected enabled MCP plugin through Cordis Fiber.restart(). It closes the old connection and resets its retry budget without changing configuration. The acknowledgement means that the plugin was restarted, not that the server is already connected. Disabled rows must be enabled separately.

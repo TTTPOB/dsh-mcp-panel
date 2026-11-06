@@ -4,6 +4,8 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
+要求 DSH 0.2.2-rc.1 和 Node ≥24.9。试调用使用当前作用域选中的上游 native 或 PTC executor 及其权限流水线，不记录为模型步骤；试调用应在 native executor 作用域使用；PTC 作用域如实显示上游直接调用拒绝。个人 DSH fork 也允许直接调用 `ptcNativeTools` 中列出的工具。独立试调用只允许无条件注册的工具。写入保留既有操作和注释；首次追加前移除空 `[]` 占位符，备份保留原文。
+
 ## 使用
 
 重连通过 Cordis Fiber.restart() 仅重启选中的已启用 MCP 插件，关闭旧连接并重置重试预算，不修改配置。操作确认表示插件已重启，不代表服务器已经连接成功。已禁用的条目需要另外启用。
