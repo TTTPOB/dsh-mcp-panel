@@ -50,10 +50,8 @@ export default defineConfig([
     // ESM output under a "type": "module" package must land on .js, not .mjs.
     fixedExtension: false,
     deps: {
-      // Only zod may come in from node_modules; everything else stays external
-      // (zod is the only non-peer dependency: bundling it keeps the host half
-      // self-contained when a profile resolves the package outside pnpm's tree,
-      // since the shared profiles/node_modules fallback carries no dep set).
+      // Inline zod for the wire descriptors. Other runtime dependencies,
+      // including Schemastery, resolve from the installed plugin package.
       onlyBundle: ['zod'],
       alwaysBundle: ['zod'],
       neverBundle: [/^node:/],

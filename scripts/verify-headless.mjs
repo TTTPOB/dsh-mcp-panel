@@ -76,7 +76,7 @@ let ctx
 try {
   // The launcher's prepareProfile heals the flat module fallback before loading:
   // the profile's hoisted node_modules carries the plugin itself, and the
-  // fallback symlinks resolve its peers (schemastery, cordis, dsh-*) from the
+  // fallback symlinks resolve its peers (cordis, dsh-*) from the
   // installation. Replicate that step here.
   healProfilesModuleFallback(installAnchor, home)
 
