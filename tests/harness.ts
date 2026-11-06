@@ -12,6 +12,7 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import CommandRuntime from '@deepseek-ai/dsh-commands'
 import SessionStore, { SessionId, type Session } from '@deepseek-ai/dsh-session'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import * as nativeExecutor from '@deepseek-ai/dsh-tool-executor-native'
 import type { McpLoaderRow } from '../src/aggregate.ts'
 import type { McpPanelService } from '../src/service.ts'
@@ -101,7 +102,7 @@ export async function mountHarness(entries: FakeEntry[] = [], config: Record<str
   const ctx = new Context()
   await ctx.plugin(SessionStore)
   const session = ctx.sessions.create(SessionId('harness-session'))
-  ctx.provide('systemPrompt', { tools: () => () => undefined, section: () => () => undefined } as never)
+  await ctx.plugin(SystemPrompt)
   await ctx.plugin(ToolRuntime)
   await ctx.plugin(nativeExecutor)
   await ctx.plugin(CommandRuntime)
