@@ -50,10 +50,11 @@ jobs:
           pnpm run verify:self-contained
           pnpm run verify:artifacts
           pnpm pack
+          sha256sum ./*.tgz > SHA256SUMS
       - name: Publish immutable GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           node scripts/changelog-section.mjs "${RELEASE_TAG#v}" > release-notes.md
-          gh release create "$RELEASE_TAG" ./*.tgz --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.md
+          gh release create "$RELEASE_TAG" ./*.tgz SHA256SUMS --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.md
