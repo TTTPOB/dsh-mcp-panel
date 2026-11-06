@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.24-fork2] - Unreleased
+
+### Changed
+
+- Target DSH 0.2.2-rc.1 and use the Agent scope's executor for panel trials.
+- Verify fork PTC native exceptions for MCP tool and resource trials.
+
 ## [0.6.24-fork1] - 2026-10-18
 
 ### Added

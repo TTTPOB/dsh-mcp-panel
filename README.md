@@ -58,6 +58,6 @@ pnpm pack
 [ADR](docs/adr/) · [GitHub Releases](https://github.com/TTTPOB/dsh-mcp-panel/releases) · [Apache-2.0](LICENSE)
 
 ```sh
-gh release download v0.6.24-fork1 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
-dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork1.tgz
+gh release download v0.6.24-fork2 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
+dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork2.tgz
 ```
