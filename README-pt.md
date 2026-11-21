@@ -4,7 +4,7 @@ Este é o fork pessoal de TTTPOB de [PerryLink/dsh-mcp-panel](https://github.com
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-Requer DSH 0.2.2-rc.1 e Node ≥24.9. As chamadas de teste usam o executor nativo ou PTC selecionado e suas permissões, sem registrar uma etapa do modelo; use um executor nativo no escopo do chamador. PTC mostra a recusa de chamadas diretas; o fork pessoal do DSH permite as ferramentas listadas em `ptcNativeTools`. Chamadas independentes admitem somente ferramentas incondicionais. A escrita preserva operações e comentários; remove o marcador vazio `[]` antes de acrescentar e mantém o original no backup.
+Requer DSH 0.2.2-rc.5 e Node ≥24.9. As chamadas de teste usam o executor nativo ou PTC selecionado e suas permissões, sem registrar uma etapa do modelo; use um executor nativo no escopo do chamador. PTC mostra a recusa de chamadas diretas; o fork pessoal do DSH permite as ferramentas listadas em `ptcNativeTools`. Chamadas independentes admitem somente ferramentas incondicionais. A escrita preserva operações e comentários; remove o marcador vazio `[]` antes de acrescentar e mantém o original no backup.
 
 ## Uso
 
@@ -58,6 +58,6 @@ pnpm pack
 [ADR](docs/adr/) · [GitHub Releases](https://github.com/TTTPOB/dsh-mcp-panel/releases) · [Apache-2.0](LICENSE)
 
 ```sh
-gh release download v0.6.24-fork2 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
-dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork2.tgz
+gh release download v0.6.24-fork3 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
+dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork3.tgz
 ```

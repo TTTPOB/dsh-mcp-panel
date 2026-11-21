@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.24-fork3] - Unreleased
+
+### Changed
+
+- Target DSH 0.2.2-rc.5 and validate panel trials against the matching fork PTC executor.
+
 ## [0.6.24-fork2] - Unreleased
 
 ### Changed

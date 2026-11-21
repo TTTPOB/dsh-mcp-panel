@@ -1,6 +1,6 @@
 {
   "name": "dsh-mcp-panel",
-  "version": "0.6.24-fork2",
+  "version": "0.6.24-fork3",
   "description": "MCP management console for the official DeepSeek Harness MCP client: /mcp command with health diagnostics and pipeline trial calls, a Settings MCP tab with server CRUD (append-only profile-patch fragments, approval-gated writes with automatic backups), a tool trial console over the official tool pipeline, connection status, reconnect counts and sanitized tool inventory, plus an optional Streamable HTTP probe.",
   "repository": {
     "type": "git",
@@ -82,7 +82,7 @@
     ],
     "compatibility": {
       "dshVersions": [
-        "0.2.2-rc.1"
+        "0.2.2-rc.5"
       ]
     },
     "capability": {
@@ -113,21 +113,21 @@
   ],
   "engines": {
     "node": ">=24.9.0",
-    "dsh": "0.2.2-rc.1"
+    "dsh": "0.2.2-rc.5"
   },
   "packageManager": "pnpm@11.28.5",
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.1.0",
     "@deepseek-ai/cordis-plugin-loader": "1.1.0",
-    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-commands": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-jobs": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-llm": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-tools": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.1"
+    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-commands": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-jobs": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-llm": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.5"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-client-connection": {
@@ -145,7 +145,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "3.19.0",
-    "@deepseek-ai/dsh-subprocess": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-subprocess": "0.2.2-rc.5",
     "tsdown": "^0.23.0",
     "typescript": "^7.0.0",
     "zod": "^4.6.5"
@@ -155,27 +155,27 @@
     "@deepseek-ai/cordis-plugin-group": "1.1.0",
     "@deepseek-ai/cordis-plugin-include": "1.1.0",
     "@deepseek-ai/cordis-plugin-loader": "1.1.0",
-    "@deepseek-ai/dsh-agent": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-app-boot": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-attachment": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-cmdline": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-commands": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-home-paths": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-jobs": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-llm": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-mcp-client": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-scope": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-session": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-system-prompt": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-tool-executor-native": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-tool-executor-ptc": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-tools": "0.2.2-rc.1",
-    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.1",
+    "@deepseek-ai/dsh-agent": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-api-remotes": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-app-boot": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-attachment": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-connection": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-locale": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-cmdline": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-commands": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-home-paths": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-jobs": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-llm": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-mcp-client": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-scope": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-session": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-system-prompt": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-tool-executor-native": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-tool-executor-ptc": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-tools": "0.2.2-rc.5",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.2-rc.5",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.0.0",
     "@types/react": "19.3.0",

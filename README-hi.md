@@ -4,7 +4,7 @@
 
 [English](README.md) · [简体中文](README-zh.md) · [Español](README-es.md) · [Português](README-pt.md) · [हिन्दी](README-hi.md)
 
-DSH 0.2.2-rc.1 और Node ≥24.9 आवश्यक हैं। परीक्षण कॉल चुने गए upstream native या PTC executor और उसकी अनुमति प्रक्रिया का उपयोग करते हैं, मॉडल चरण के लॉग के बिना; परीक्षण के लिए कॉलर के scope में native executor का उपयोग करें। PTC scope सीधे कॉल की upstream अस्वीकृति दिखाता है; निजी DSH fork में `ptcNativeTools` में सूचीबद्ध टूल सीधे कॉल हो सकते हैं। स्वतंत्र परीक्षण केवल बिना शर्त पंजीकृत टूल स्वीकार करते हैं। लेखन पुराने ऑपरेशन और टिप्पणियाँ बनाए रखता है; पहले append से पहले खाली `[]` हटता है और मूल पाठ backup में रहता है।
+DSH 0.2.2-rc.5 और Node ≥24.9 आवश्यक हैं। परीक्षण कॉल चुने गए upstream native या PTC executor और उसकी अनुमति प्रक्रिया का उपयोग करते हैं, मॉडल चरण के लॉग के बिना; परीक्षण के लिए कॉलर के scope में native executor का उपयोग करें। PTC scope सीधे कॉल की upstream अस्वीकृति दिखाता है; निजी DSH fork में `ptcNativeTools` में सूचीबद्ध टूल सीधे कॉल हो सकते हैं। स्वतंत्र परीक्षण केवल बिना शर्त पंजीकृत टूल स्वीकार करते हैं। लेखन पुराने ऑपरेशन और टिप्पणियाँ बनाए रखता है; पहले append से पहले खाली `[]` हटता है और मूल पाठ backup में रहता है।
 
 ## उपयोग
 
@@ -58,6 +58,6 @@ pnpm pack
 [ADR](docs/adr/) · [GitHub Releases](https://github.com/TTTPOB/dsh-mcp-panel/releases) · [Apache-2.0](LICENSE)
 
 ```sh
-gh release download v0.6.24-fork2 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
-dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork2.tgz
+gh release download v0.6.24-fork3 --repo TTTPOB/dsh-mcp-panel --pattern "*.tgz"
+dsh plugin --profile web add ./dsh-mcp-panel-0.6.24-fork3.tgz
 ```
